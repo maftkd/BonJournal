@@ -12,9 +12,10 @@ bg_colors = ["\033[40m","\033[41m","\033[42m","\033[43m","\033[44m","\033[45m","
 bg_color = bg_colors[0];
 
 
-#globals
+#global syntax
 prompt = "$ "
 response = "> "
+key_input = "< "
 
 #get text editor
 if len(sys.argv) < 2:
@@ -24,15 +25,15 @@ else:
 
 #get file explorer
 if len(sys.argv) < 3:
-	file_browser="explorer"
+    file_browser="explorer"
 else:
-	file_browser=sys.argv[2]
+    file_browser=sys.argv[2]
 
 #get clear command
 if file_browser=="explorer":
-	clear_command="cls"
+    clear_command="cls"
 else:
-	clear_command="clear"
+    clear_command="clear"
 
 #set up log dir
 log_path = os.path.dirname(os.path.abspath(__file__))+"/logs"
@@ -49,20 +50,16 @@ os.system(clear_command)
 
 #print header
 print(fg_color+"welcome to BonJournal")
+print(response+"press enter for a list of commands.")
 
 def showHelp():
     print(response+"exit - exits BonJournal")
+    print(response+"clear - clears the screen")
     print(response+"list - print a list of your journals")
     print(response+"create - create a new journal")
     print(response+"destroy - destroy an existing journal")
     print(response+"show - show journals in explorer")
     print(response+"write - write a new journal entry")
-    print(response+"open - open desired journal")
-    print(response+"close - close opened journal")
-    print(response+"j - flip backwords through journal")
-    print(response+"k - flip forward through journal")
-    print(response+"l - create new entry in journal")
-    print(response+"clear - clears the screen")
 
 def listJournals():
     with open(index_path, 'r') as f:
@@ -73,7 +70,10 @@ def listJournals():
             if name != "":
                 bg = int(parts[1])
                 fg = int(parts[2])
-                print(bg_color+fg_color+response+bg_colors[bg]+fg_colors[fg]+name+bg_color);
+                num_files = len(os.listdir(log_path+'/'+name))
+                if num_files>0:
+                    num_files -= 1
+                print(bg_color+fg_color+response+bg_colors[bg]+fg_colors[fg]+name+bg_color+fg_color+" ("+str(num_files)+")");
 
     print(bg_color+fg_color+response+"-end of list-")
 
@@ -124,6 +124,13 @@ def destroyJournal(name):
     else:
         print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
 
+def show():
+    if file_browser == "explorer":
+        os.system(file_browser + " "+log_path.replace('/','\\'))
+    else:
+        os.system(file_browser + " "+log_path)
+
+
 def getColors(name):
     with open(index_path, 'r') as f:
         journs = f.readlines()
@@ -142,18 +149,33 @@ def writeJournal(name):
     key_path = journPath+"/keys.bjk"
     if not os.path.exists(key_path):
         open(key_path, 'w').close()
-    file_index = 0
+    file_index = "0"
     with open(key_path, 'r') as f:
         lines = f.readlines()
-        file_index = len(lines)
+        if len(lines) > 0:
+            file_index=str(int(lines[len(lines)-1].split('|')[0])+1)
     #open the file
-	file_path = journPath+"/"+str(file_index)+".bj"
-	open(file_path, 'w').close()
+    file_path = journPath+"/"+file_index+".bj"
+    open(file_path, 'w').close()
     t=Thread(target = lambda: os.system(text_editor + " " + file_path))
     t.start()
     #collect keywords
     colors = getColors(name).split('|')
     print(response+"turning a new leaf in "+bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+name+bg_color+fg_color)
+    for i in range(3):
+        print(response+".")
+    print(response+"enter \033[1msearch keys\033[22m for entry followed by \033[1mdone\033[22m")
+    key="foo"
+    line=file_index
+    while key != "done" and key != "":
+        key=raw_input(key_input)
+        if key != "done" and key != "":
+            line += ("|"+key)
+    with open(key_path, 'a') as f:
+        f.write(line+'\n')
+    print(response+"Ok. Search keys have been saved...")
+
+
 
 #main
 function=""
@@ -171,12 +193,12 @@ while function != "close" and function != "exit":
     elif function == "create":
         createJournal()
     elif parts[0] == "destroy":
-        if len(parts) == 1:
+        if len(parts) == 1 or parts[1]=="":
             print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ destroy <journal_name>")
         else:
             destroyJournal(parts[1])
     elif function == "show":
-        os.system(file_browser + " "+log_path)
+        show();
     elif parts[0] == "write":
         if len(parts) == 1:
             print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ write <journal_name>")
