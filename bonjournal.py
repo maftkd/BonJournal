@@ -47,7 +47,7 @@ if not os.path.exists(index_path):
 os.system(clear_command)
 
 #print header
-#print(fg_color+"welcome to BonJournal")
+print(fg_color+"welcome to BonJournal")
 
 def showHelp():
     print(response+"exit - exits BonJournal")
@@ -172,5 +172,5 @@ while function != "close" and function != "exit":
 
 
 #revert to my default theme
-#os.system('color 0a')
+os.system('color 0a')
 os.system(clear_command)
