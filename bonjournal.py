@@ -122,6 +122,15 @@ def destroyJournal(name):
     else:
         print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
 
+def getColors(name):
+    with open(index_path, 'r') as f:
+        journs = f.readlines()
+        for journ in journs:
+            parts = journ.split('|')
+            if parts[0]==name:
+                return (parts[1]+'|'+parts[2])
+    return "7|0"
+
 def writeJournal(name):
     journPath = log_path+"/"+name
     if not os.path.exists(journPath):
@@ -139,8 +148,9 @@ def writeJournal(name):
 	file_path = journPath+"/"+str(file_index)+".bj"
 	open(file_path, 'w').close()
     os.system(text_editor + " " + file_path)
-
-
+    #collect keywords
+    colors = getColors(name).split('|')
+    print(response+"turning a new leaf in "+bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+name+bg_color+fg_color)
 
 #main
 function=""
