@@ -21,21 +21,33 @@ if len(sys.argv) < 2:
 else:
     text_editor=sys.argv[1]
 
+#get file explorer
+if len(sys.argv) < 3:
+	file_browser="explorer"
+else:
+	file_browser=sys.argv[2]
+
+#get clear command
+if file_browser=="explorer":
+	clear_command="cls"
+else:
+	clear_command="clear"
+
 #set up log dir
-log_path = os.path.dirname(os.path.abspath(__file__))+"\\logs"
+log_path = os.path.dirname(os.path.abspath(__file__))+"/logs"
 if not os.path.exists(log_path):
     os.mkdir(log_path)
 
 #set up journal index
-index_path = log_path+"\\index.bji"
+index_path = log_path+"/index.bji"
 if not os.path.exists(index_path):
     open(index_path,'a').close()
 
 #prime screen
-os.system("cls")
+os.system(clear_command)
 
 #print header
-print(fg_color+"welcome to BonJournal")
+#print(fg_color+"welcome to BonJournal")
 
 def showHelp():
     print(response+"exit - exits BonJournal")
@@ -68,7 +80,7 @@ def createJournal():
     while not name_valid:
         print(response+"Enter \033[1mname\033[22m of new journal")
         name = raw_input(prompt)
-        if not os.path.exists(log_path+'\\'+name):
+        if not os.path.exists(log_path+'/'+name):
             name_valid=True
         else:
             print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" already exists.")
@@ -86,11 +98,11 @@ def createJournal():
     with open(index_path, 'a') as f:
         f.write(name+"|"+str(colorB)+"|"+str(colorF)+'\n')
 
-    os.mkdir(log_path+'\\'+name)
+    os.mkdir(log_path+'/'+name)
     print(response+"Journal "+bg_colors[colorB]+fg_colors[colorF]+name+fg_color+bg_color+" has been created.")
 
 def destroyJournal(name):
-    journPath = log_path+"\\"+name
+    journPath = log_path+"/"+name
     if os.path.exists(journPath):
         shutil.rmtree(journPath);
     index=""
@@ -111,12 +123,12 @@ def destroyJournal(name):
         print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
 
 def writeJournal(name):
-    journPath = log_path+"\\"+name
+    journPath = log_path+"/"+name
     if not os.path.exists(journPath):
         print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
         return
     #determine the next filename
-    key_path = journPath+"\\keys.bjk"
+    key_path = journPath+"/keys.bjk"
     if not os.path.exists(key_path):
         open(key_path, 'w').close()
     file_index = 0
@@ -124,7 +136,9 @@ def writeJournal(name):
         lines = f.readlines()
         file_index = len(lines)
     #open the file
-    os.system(text_editor + " " + str(file_index)+".bj");
+	file_path = journPath+"/"+str(file_index)+".bj"
+	open(file_path, 'w').close()
+    os.system(text_editor + " " + file_path)
 
 
 
@@ -149,7 +163,7 @@ while function != "close" and function != "exit":
         else:
             destroyJournal(parts[1])
     elif function == "show":
-        os.system("explorer "+log_path)
+        os.system(file_browser + " "+log_path)
     elif parts[0] == "write":
         if len(parts) == 1:
             print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ write <journal_name>")
@@ -158,5 +172,5 @@ while function != "close" and function != "exit":
 
 
 #revert to my default theme
-os.system('color 0a')
-os.system('cls')
+#os.system('color 0a')
+os.system(clear_command)

@@ -1,1 +1,1 @@
-python %~dp0\bonjournal.py sublime_text
+python %~dp0\bonjournal.py sublime_text explorer
