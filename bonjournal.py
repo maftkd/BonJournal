@@ -4,6 +4,7 @@ from datetime import date
 from datetime import datetime
 import glob
 import shutil
+from threading import Thread
 
 fg_colors = ["\033[30m","\033[31m","\033[32m","\033[33m","\033[34m","\033[35m","\033[36m","\033[37m"]
 fg_color = fg_colors[7];
@@ -61,6 +62,7 @@ def showHelp():
     print(response+"j - flip backwords through journal")
     print(response+"k - flip forward through journal")
     print(response+"l - create new entry in journal")
+    print(response+"clear - clears the screen")
 
 def listJournals():
     with open(index_path, 'r') as f:
@@ -147,7 +149,8 @@ def writeJournal(name):
     #open the file
 	file_path = journPath+"/"+str(file_index)+".bj"
 	open(file_path, 'w').close()
-    os.system(text_editor + " " + file_path)
+    t=Thread(target = lambda: os.system(text_editor + " " + file_path))
+    t.start()
     #collect keywords
     colors = getColors(name).split('|')
     print(response+"turning a new leaf in "+bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+name+bg_color+fg_color)
@@ -179,6 +182,8 @@ while function != "close" and function != "exit":
             print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ write <journal_name>")
         else:
             writeJournal(parts[1])
+    elif function == "clear":
+        os.system(clear_command)
 
 
 #revert to my default theme
