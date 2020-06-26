@@ -15,6 +15,12 @@ bg_color = bg_colors[0];
 prompt = "$ "
 response = "> "
 
+#get text editor
+if len(sys.argv) < 2:
+    text_editor="notepad"
+else:
+    text_editor=sys.argv[1]
+
 #set up log dir
 log_path = os.path.dirname(os.path.abspath(__file__))+"\\logs"
 if not os.path.exists(log_path):
@@ -37,7 +43,7 @@ def showHelp():
     print(response+"create - create a new journal")
     print(response+"destroy - destroy an existing journal")
     print(response+"show - show journals in explorer")
-    print(response+"rename - rename an existing journal")
+    print(response+"write - write a new journal entry")
     print(response+"open - open desired journal")
     print(response+"close - close opened journal")
     print(response+"j - flip backwords through journal")
@@ -55,7 +61,7 @@ def listJournals():
                 fg = int(parts[2])
                 print(bg_color+fg_color+response+bg_colors[bg]+fg_colors[fg]+name+bg_color);
 
-    print(bg_color+fg_color+response+"end of list")
+    print(bg_color+fg_color+response+"-end of list-")
 
 def createJournal():
     name_valid=False
@@ -85,7 +91,7 @@ def createJournal():
 
 def destroyJournal(name):
     journPath = log_path+"\\"+name
-    if(os.path.exists(journPath)):
+    if os.path.exists(journPath):
         shutil.rmtree(journPath);
     index=""
     found=False
@@ -104,6 +110,24 @@ def destroyJournal(name):
     else:
         print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
 
+def writeJournal(name):
+    journPath = log_path+"\\"+name
+    if not os.path.exists(journPath):
+        print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
+        return
+    #determine the next filename
+    key_path = journPath+"\\keys.bjk"
+    if not os.path.exists(key_path):
+        open(key_path, 'w').close()
+    file_index = 0
+    with open(key_path, 'r') as f:
+        lines = f.readlines()
+        file_index = len(lines)
+    #open the file
+    os.system(text_editor + " " + str(file_index)+".bj");
+
+
+
 #main
 function=""
 while function != "close" and function != "exit":
@@ -121,12 +145,16 @@ while function != "close" and function != "exit":
         createJournal()
     elif parts[0] == "destroy":
         if len(parts) == 1:
-            print(response+"usage $ destroy <journal_name>")
+            print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ destroy <journal_name>")
         else:
             destroyJournal(parts[1])
     elif function == "show":
         os.system("explorer "+log_path)
-
+    elif parts[0] == "write":
+        if len(parts) == 1:
+            print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ write <journal_name>")
+        else:
+            writeJournal(parts[1])
 
 
 #revert to my default theme
