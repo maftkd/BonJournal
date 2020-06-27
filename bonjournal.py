@@ -60,6 +60,7 @@ def showHelp():
     print(response+"destroy - destroy an existing journal")
     print(response+"show - show journals in explorer")
     print(response+"write - write a new journal entry")
+    print(response+"read - read latest entries from journal")
 
 def listJournals():
     with open(index_path, 'r') as f:
@@ -175,6 +176,61 @@ def writeJournal(name):
         f.write(line+'\n')
     print(response+"Ok. Search keys have been saved...")
 
+def readJournal(name):
+    journPath = log_path+"/"+name
+    if not os.path.exists(journPath):
+        print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
+        return
+    #get list of all .bj's in the journPath
+    files=glob.glob(journPath+"/*.bj")
+    for file in files:
+        file = file.replace('\\','/')
+        #print(file)
+    colors = getColors(name).split('|')
+    print(response+"Opening "+bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+name+bg_color+fg_color+" to latest entry");
+    index=len(files)-1
+    
+    if(index<0):
+        print(response+"Nothing here... Write some journals first, and then come back to read them")
+        return
+
+    dispJournal(files[index],colors)
+
+    cmd = "foo"
+    while cmd != "l" and cmd != "":
+        if index==0:
+            prev="\033[9mJ for previous\033[29m"
+        else:
+            prev="J for previous"
+        if index==len(files)-1:
+            nxt="\033[9mK for next\033[29m"
+            print('dbug should be crossing out')
+        else:
+            nxt="K for next"
+        print(response+bg_colors[4]+fg_colors[7]+prev+", "+nxt+", L to leave"+fg_color+bg_color);
+        cmd = raw_input(key_input)
+        if cmd == "j":
+            index-=1;
+            if(index<0):
+                index=0;
+                print(response+"No older entries");
+                continue
+            dispJournal(files[index],colors)
+        elif cmd == "k":
+            index += 1;
+            if index >= len(files):
+                index = len(files)-1;
+                print(response+"No newer entries");
+                continue
+            dispJournal(files[index],colors)
+
+
+def dispJournal(path,colors):
+    os.system(clear_command)
+    with open(path, 'r') as f:
+        datestr = datetime.fromtimestamp(os.path.getmtime(path)).strftime('%m/%d/%Y %H:%M');
+        date = "Date: "+datestr+"\n";
+        print(bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+date+f.read()+fg_color+bg_color)
 
 
 #main
@@ -204,10 +260,16 @@ while function != "close" and function != "exit":
             print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ write <journal_name>")
         else:
             writeJournal(parts[1])
+    elif parts[0] == "read":
+        if len(parts) == 1:
+            print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ read <journal_name>")
+        else:
+            readJournal(parts[1])
     elif function == "clear":
         os.system(clear_command)
 
 
 #revert to my default theme
-os.system('color 0a')
+#os.system('color 0a')
+print("\033[0m")
 os.system(clear_command)
