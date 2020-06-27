@@ -93,11 +93,11 @@ def createJournal():
     for col in range(len(bg_colors)):
         print(bg_colors[col]+response+str(col)+bg_color)
     
-    colorB = int(raw_input(bg_color+prompt))
+    colorB = int(raw_input(bg_color+key_input))
     print(response+"Select the \033[1mforeground color\033[22m")
     for col in range(len(fg_colors)):
         print(fg_colors[col]+response+str(col))
-    colorF = int(raw_input(fg_color+prompt))
+    colorF = int(raw_input(fg_color+key_input))
 
     with open(index_path, 'a') as f:
         f.write(name+"|"+str(colorB)+"|"+str(colorF)+'\n')
@@ -325,8 +325,8 @@ while function != "close" and function != "exit":
     elif function == "clear":
         os.system(clear_command)
     elif parts[0] == "key":
-        if len(parts) < 3:
-            print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fb_color+" usage $ key <keyword> <journal_name>")
+        if len(parts) < 3 or parts[1]=="" or parts[2]=="":
+            print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" usage $ key <keyword> <journal_name>")
         else:
             keySearch(parts[1],parts[2])
 
