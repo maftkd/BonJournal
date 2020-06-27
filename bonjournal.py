@@ -195,7 +195,7 @@ def readJournal(name):
         print(response+"Nothing here... Write some journals first, and then come back to read them")
         return
 
-    dispJournal(files[index],colors,)
+    dispJournal(files[index],colors,None)
     cmd = "foo"
     while cmd != "l" and cmd != "":
         if index==0:
@@ -214,14 +214,14 @@ def readJournal(name):
                 index=0;
                 print(response+"No older entries");
                 continue
-            dispJournal(files[index],colors,)
+            dispJournal(files[index],colors,None)
         elif cmd == "k":
             index += 1;
             if index >= len(files):
                 index = len(files)-1;
                 print(response+"No newer entries");
                 continue
-            dispJournal(files[index],colors,)
+            dispJournal(files[index],colors,None)
 
 
 def dispJournal(path,colors,key):
