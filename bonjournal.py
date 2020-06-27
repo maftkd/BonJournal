@@ -61,6 +61,7 @@ def showHelp():
     print(response+"show - show journals in explorer")
     print(response+"write - write a new journal entry")
     print(response+"read - read latest entries from journal")
+    print(response+"key - search for keyword within a journal")
 
 def listJournals():
     with open(index_path, 'r') as f:
@@ -194,20 +195,18 @@ def readJournal(name):
         print(response+"Nothing here... Write some journals first, and then come back to read them")
         return
 
-    dispJournal(files[index],colors)
-
+    dispJournal(files[index],colors,)
     cmd = "foo"
     while cmd != "l" and cmd != "":
         if index==0:
-            prev="\033[9mJ for previous\033[29m"
+            prev=""
         else:
             prev="J for previous"
         if index==len(files)-1:
-            nxt="\033[9mK for next\033[29m"
-            print('dbug should be crossing out')
+            nxt=""
         else:
             nxt="K for next"
-        print(response+bg_colors[4]+fg_colors[7]+prev+", "+nxt+", L to leave"+fg_color+bg_color);
+        print(response+bg_colors[7]+fg_colors[4]+prev+", "+nxt+", L to leave"+fg_color+bg_color);
         cmd = raw_input(key_input)
         if cmd == "j":
             index-=1;
@@ -215,22 +214,80 @@ def readJournal(name):
                 index=0;
                 print(response+"No older entries");
                 continue
-            dispJournal(files[index],colors)
+            dispJournal(files[index],colors,)
         elif cmd == "k":
             index += 1;
             if index >= len(files):
                 index = len(files)-1;
                 print(response+"No newer entries");
                 continue
-            dispJournal(files[index],colors)
+            dispJournal(files[index],colors,)
 
 
-def dispJournal(path,colors):
+def dispJournal(path,colors,key):
+
     os.system(clear_command)
     with open(path, 'r') as f:
         datestr = datetime.fromtimestamp(os.path.getmtime(path)).strftime('%m/%d/%Y %H:%M');
         date = "Date: "+datestr+"\n";
-        print(bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+date+f.read()+fg_color+bg_color)
+        copy = f.read();
+        if key != None:
+            copy = copy.replace(key,bg_colors[7-int(colors[0])]+fg_colors[7-int(colors[1])]+key+bg_colors[int(colors[0])]+fg_colors[int(colors[1])])
+            copy = copy.replace(key.lower(),bg_colors[7-int(colors[0])]+fg_colors[7-int(colors[1])]+key+bg_colors[int(colors[0])]+fg_colors[int(colors[1])])
+        print(bg_colors[int(colors[0])]+fg_colors[int(colors[1])]+date+copy+fg_color+bg_color)
+
+def keySearch(keyword, name):
+    journPath = log_path+"/"+name
+    if not os.path.exists(journPath):
+        print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
+        return
+    #determine the next filename
+    key_path = journPath+"/keys.bjk"
+    if not os.path.exists(key_path):
+        open(key_path, 'w').close()
+    file_results = []
+    with open(key_path, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            parts = line.split('|')
+            for part in parts:
+                if part.lower().rstrip() == keyword.lower():
+                    file_results.append(journPath+'/'+parts[0]+'.bj')
+    print(response+str(len(file_results))+" result(s) found");
+    for res in file_results:
+        print(res)
+    if len(file_results) == 0:
+        return
+    #let user cycle through results
+    colors = getColors(name).split('|')
+    index = len(file_results)-1
+    dispJournal(file_results[index],colors,keyword)
+    cmd = "foo"
+    while cmd != "l" and cmd != "":
+        if index==0:
+            prev=""
+        else:
+            prev="J for previous"
+        if index==len(file_results)-1:
+            nxt=""
+        else:
+            nxt="K for next"
+        print(response+bg_colors[7]+fg_colors[4]+prev+", "+nxt+", L to leave"+fg_color+bg_color);
+        cmd = raw_input(key_input)
+        if cmd == "j":
+            index-=1;
+            if(index<0):
+                index=0;
+                print(response+"No older entries");
+                continue
+            dispJournal(file_results[index],colors,keyword)
+        elif cmd == "k":
+            index += 1;
+            if index >= len(file_results):
+                index = len(file_results)-1;
+                print(response+"No newer entries");
+                continue
+            dispJournal(file_results[index],colors,keyword)
 
 
 #main
@@ -267,6 +324,11 @@ while function != "close" and function != "exit":
             readJournal(parts[1])
     elif function == "clear":
         os.system(clear_command)
+    elif parts[0] == "key":
+        if len(parts) < 3:
+            print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fb_color+" usage $ key <keyword> <journal_name>")
+        else:
+            keySearch(parts[1],parts[2])
 
 
 #revert to my default theme
