@@ -183,7 +183,7 @@ def readJournal(name):
         print(response+bg_colors[1]+fg_colors[7]+"err:"+bg_color+fg_color+" Journal "+name+" could not be found")
         return
     #get list of all .bj's in the journPath
-    files=glob.glob(journPath+"/*.bj")
+    files=sorted(glob.glob(journPath+"/*.bj"),key=lambda name: int(filter(str.isdigit,name)))
     for file in files:
         file = file.replace('\\','/')
         #print(file)
